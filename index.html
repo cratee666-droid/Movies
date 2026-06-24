@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#f6f7fb" />
+<meta name="color-scheme" content="light" />
+<meta name="HandheldFriendly" content="true" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<meta name="description" content="Free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and Class 8, 9, 11. One stop solution to score more in exams." />
+<link rel="canonical" href="https://qclasses.netlify.app/" />
+<title>Free Exercise Questions and Answers - Maharashtra Board Class 8, 9, 10, 11, 12 | QClasses</title>
+<meta name="robots" content="index, follow" />
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="QClasses" />
+<meta property="og:title" content="Free Exercise Questions and Answers - Maharashtra Board Class 8, 9, 10, 11, 12 | QClasses" />
+<meta property="og:description" content="Free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and Class 8, 9, 11. One stop solution to score more in exams." />
+<meta property="og:url" content="https://qclasses.netlify.app/" />
+<meta property="og:image" content="https://qclasses.netlify.app/icon-maskable-512.png" />
+
+
+<!-- Inline SVG favicon (no extra HTTP request). -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232a3299'/%3E%3Ctext x='50' y='66' text-anchor='middle' fill='white' font-size='62' font-family='sans-serif' font-weight='700'%3EQ%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://rosho-c2d11-default-rtdb.firebaseio.com" crossorigin />
+<link rel="dns-prefetch" href="https://rosho-c2d11-default-rtdb.firebaseio.com" />
+
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="offline-tag" id="offlineTag">OFFLINE</div>
+
+<div id="app">
+  <div class="header">
+    <div class="header-row">
+      <img src="./icon.svg" alt="Q&A" class="site-logo" />
+      <h1 class="title">Classes</h1>
+      <a class="header-action" href="./books.html">Books</a>
+      <div class="update-pill" id="updatePill">Updating…</div>
+    </div>
+    <div class="breadcrumb"><span class="current">Classes</span></div>
+
+    <div class="search-bar-global">
+      <span class="search-icon">⌕</span>
+      <input
+        type="search"
+        class="search-input"
+        id="searchInput"
+        placeholder="Search all questions…"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="searchClear" aria-label="Clear" style="display:none;">×</button>
+    </div>
+  </div>
+
+  <section class="hero-card">
+    <div class="hero-kicker">Free • Chapter-wise Solutions • HSC SSC </div>
+    <h2 class="hero-title">Exercise Questions and Answers for Maharashtra Board Class 8, 9, 10, 11, 12</h2>
+    <p class="hero-subtitle">Get chapter-wise exercise questions and answers for Maharashtra Board SSC and HSC. Covers Class 8, 9, 10, 11 and 12 — all subjects, all chapters, completely free.</p>
+    <div class="hero-actions">
+      <a class="hero-btn primary" href="#content">Browse Classes</a>
+      <a class="hero-btn" href="./books.html">Download Books</a>
+    </div>
+  </section>
+
+  <div class="board-filters" id="boardFilters" style="display:none;"></div>
+
+  <div id="content"><section class="board-section"><div class="board-title">SSC</div><div class="list"><a class="list-item" href="./subjects/class-10/index.html"><svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span class="card-main"><span class="card-title">Class 10</span><span class="card-subtitle">SSC</span></span><span class="count">1 subject</span><span class="arrow">›</span></a></div></section></div></div>
+  </div>
+</div>
+<footer class="site-footer"><strong>Q&A Student</strong><br>Simple, organized learning for students.</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- shared.js loads synchronously BEFORE the page script so helpers are ready. -->
+<script src="./shared.js"></script>
+<script>
+(function () {
+  var APP = window.APP;
+  var escapeHtml = APP.escapeHtml;
+  var buildUrl = APP.buildUrl;
+  var refreshTree = APP.refreshTree;
+  var getClassSummaries = APP.getClassSummaries;
+  var svgIcon = APP.svgIcon;
+  var setUpdating = APP.setUpdating;
+  var setPageMeta = APP.setPageMeta;
+  var generateSlug = APP.generateSlug;
+
+  var $content = document.getElementById('content');
+  var $search = document.getElementById('searchInput');
+  var $clear = document.getElementById('searchClear');
+  var $boardFilters = document.getElementById('boardFilters');
+
+  var classes = [];
+  var allData = null;
+  var allQuestions = [];
+  var searchIndexPromise = null;
+  var debounceTimer = null;
+  var selectedBoard = 'all';
+
+  function buildIndex(data) {
+    var items = [];
+    Object.keys(data || {}).forEach(function (cId) {
+      var cName = (data[cId] && data[cId].name) || cId;
+      var cSlug = (data[cId] && data[cId].slug) || generateSlug(cName);
+      var subs = (data[cId] && data[cId].subjects) || {};
+      Object.keys(subs).forEach(function (sId) {
+        var sName = (subs[sId] && subs[sId].name) || sId;
+        var sSlug = (subs[sId] && subs[sId].slug) || generateSlug(sName);
+        var chs = (subs[sId] && subs[sId].chapters) || {};
+        Object.keys(chs).forEach(function (chId) {
+          var chName = (chs[chId] && chs[chId].name) || chId;
+          var chSlug = (chs[chId] && chs[chId].slug) || generateSlug(chName);
+          var qs = (chs[chId] && chs[chId].questions) || {};
+          Object.keys(qs).forEach(function (qId) {
+            items.push({
+              id: qId,
+              classId: cId,
+              className: cName,
+              classSlug: cSlug,
+              subjectId: sId,
+              subjectName: sName,
+              subjectSlug: sSlug,
+              chapterId: chId,
+              chapterName: chName,
+              chapterSlug: chSlug,
+              type: String((qs[qId] && qs[qId].type) || ''),
+              question: String((qs[qId] && qs[qId].question) || ''),
+              answer: String((qs[qId] && qs[qId].answer) || '')
+            });
+          });
+        });
+      });
+    });
+    return items;
+  }
+
+  function renderBoardFilters() {
+    var boards = [];
+    var seen = {};
+    classes.forEach(function (c) {
+      var board = (c.board || 'Classes').trim() || 'Classes';
+      if (!seen[board]) { seen[board] = true; boards.push({ title: board, order: Number(c.boardOrder == null ? 9999 : c.boardOrder) }); }
+    });
+    boards.sort(function (a, b) {
+      if (a.order !== b.order) return a.order - b.order;
+      return String(a.title).localeCompare(String(b.title), undefined, { numeric: true });
+    });
+    if (!boards.length || boards.length === 1) { $boardFilters.style.display = 'none'; return; }
+    $boardFilters.style.display = 'flex';
+    $boardFilters.innerHTML = '<button class="filter-chip ' + (selectedBoard === 'all' ? 'active' : '') + '" data-board="all">All</button>' +
+      boards.map(function (b) {
+        return '<button class="filter-chip ' + (selectedBoard === b.title ? 'active' : '') + '" data-board="' + escapeHtml(b.title) + '">' + escapeHtml(b.title) + '</button>';
+      }).join('');
+    Array.prototype.forEach.call($boardFilters.querySelectorAll('[data-board]'), function (btn) {
+      btn.addEventListener('click', function () {
+        selectedBoard = btn.getAttribute('data-board') || 'all';
+        renderBoardFilters();
+        renderClassList();
+      });
+    });
+  }
+
+  function renderClassList() {
+    if (!classes.length) {
+      $content.innerHTML = '<div class="empty">No classes available yet.</div>';
+      return;
+    }
+
+    renderBoardFilters();
+    var groups = [];
+    var byBoard = {};
+    classes.forEach(function (c) {
+      var board = (c.board || 'Classes').trim() || 'Classes';
+      if (selectedBoard !== 'all' && board !== selectedBoard) return;
+      if (!byBoard[board]) {
+        byBoard[board] = { title: board, order: Number(c.boardOrder == null ? 9999 : c.boardOrder), items: [] };
+        groups.push(byBoard[board]);
+      }
+      byBoard[board].items.push(c);
+    });
+    groups.sort(function (a, b) {
+      if (a.order !== b.order) return a.order - b.order;
+      return String(a.title).localeCompare(String(b.title), undefined, { numeric: true });
+    });
+    if (!groups.length) {
+      selectedBoard = 'all';
+      renderClassList();
+      return;
+    }
+
+    $content.innerHTML = groups.map(function (g) {
+      g.items.sort(function (a, b) {
+        var ao = Number(a.order == null ? 9999 : a.order);
+        var bo = Number(b.order == null ? 9999 : b.order);
+        if (ao !== bo) return ao - bo;
+        return String(a.name || a.id).localeCompare(String(b.name || b.id), undefined, { numeric: true });
+      });
+      return '<section class="board-section">' +
+             '<div class="board-title">' + escapeHtml(g.title) + '</div>' +
+             '<div class="list">' + g.items.map(function (c) {
+               var sc = Number(c.subjectCount || 0);
+               var countText = sc ? (sc === 1 ? '1 subject' : sc + ' subjects') : '—';
+               return '<a class="list-item" href="' + buildUrl('subjects.html', { class: c.slug }) + '">' +
+                      svgIcon('class') +
+                      '<span class="card-main"><span class="card-title">' + escapeHtml(c.name || c.id) + '</span>' +
+                      '<span class="card-subtitle">' + escapeHtml(g.title) + '</span></span>' +
+                      '<span class="count">' + countText + '</span>' +
+                      '<span class="arrow">›</span></a>';
+             }).join('') + '</div></section>';
+    }).join('');
+  }
+
+  function ensureSearchIndex() {
+    if (allData) return Promise.resolve(allData);
+    if (searchIndexPromise) return searchIndexPromise;
+
+    setUpdating(true);
+    searchIndexPromise = refreshTree().then(function (data) {
+      allData = data || {};
+      allQuestions = buildIndex(allData);
+      setUpdating(false);
+      return allData;
+    }).catch(function (err) {
+      setUpdating(false);
+      searchIndexPromise = null;
+      throw err;
+    });
+    return searchIndexPromise;
+  }
+
+  function doSearch() {
+    var q = ($search.value || '').trim();
+    var qLow = q.toLowerCase();
+    $clear.style.display = q ? 'flex' : 'none';
+
+    if (!q) {
+      renderClassList();
+      return;
+    }
+    $boardFilters.style.display = 'none';
+
+    if (!allData) {
+      $content.innerHTML = '<div class="skeleton-heading"></div><div class="skeleton-list"><div class="skeleton-item"></div><div class="skeleton-item"></div><div class="skeleton-item short"></div></div>';
+      ensureSearchIndex().then(doSearch).catch(function (err) {
+        $content.innerHTML = '<div class="error-banner">Failed to search: ' +
+                             escapeHtml(err.message || 'Unknown error') + '</div>';
+      });
+      return;
+    }
+
+    if (!allQuestions.length) {
+      $content.innerHTML = '<div class="empty">No questions in database yet.</div>';
+      return;
+    }
+
+    var filtered = allQuestions.filter(function (it) {
+      return (it.question || '').toLowerCase().includes(qLow) ||
+             (it.type || '').toLowerCase().includes(qLow);
+    });
+    if (!filtered.length) {
+      $content.innerHTML = '<div class="empty">No questions match &ldquo;' +
+                           escapeHtml(q) + '&rdquo;.<br>Try a different keyword.</div>';
+      return;
+    }
+
+    var groups = new Map();
+    filtered.forEach(function (it) {
+      var key = it.classId + '||' + it.subjectId + '||' + it.chapterId;
+      if (!groups.has(key)) {
+        groups.set(key, {
+          classId: it.classId, subjectId: it.subjectId, chapterId: it.chapterId,
+          className: it.className, subjectName: it.subjectName, chapterName: it.chapterName,
+          classSlug: it.classSlug, subjectSlug: it.subjectSlug, chapterSlug: it.chapterSlug,
+          items: []
+        });
+      }
+      groups.get(key).items.push(it);
+    });
+
+    var html = '<div class="search-meta">' + filtered.length +
+               ' result' + (filtered.length === 1 ? '' : 's') +
+               ' for &ldquo;' + escapeHtml(q) + '&rdquo;</div>';
+
+    groups.forEach(function (g) {
+      html += '<div class="search-group">';
+      html += '<div class="search-group-path">';
+      html += '<a href="' + buildUrl('subjects.html', { class: g.classSlug }) + '">' +
+              escapeHtml(g.className) + '</a>';
+      html += '<span class="crumb-sep">›</span>';
+      html += '<a href="' + buildUrl('chapters.html', { class: g.classSlug, subject: g.subjectSlug }) + '">' +
+              escapeHtml(g.subjectName) + '</a>';
+      html += '<span class="crumb-sep">›</span>';
+      html += '<span class="current">' + escapeHtml(g.chapterName) + '</span>';
+      html += '</div><div class="search-group-list">';
+      g.items.forEach(function (it, idx) {
+        var url = buildUrl('answer.html', {
+          class: it.classSlug, subject: it.subjectSlug,
+          chapter: it.chapterSlug, qId: it.id
+        });
+        html += '<a class="search-result" href="' + url + '">';
+        html += svgIcon('question');
+        html += '<div class="result-body">';
+        if (it.type) html += '<div class="result-type">' + escapeHtml(it.type) + '</div>';
+        html += '<div class="result-text">' + escapeHtml(it.question) + '</div>';
+        html += '</div><span class="arrow">›</span></a>';
+      });
+      html += '</div></div>';
+    });
+
+    $content.innerHTML = html;
+  }
+
+  function loadClasses() {
+    if (!navigator.onLine) {
+      $content.innerHTML = '<div class="error-banner">You are offline. Please connect to the internet and reload.</div>';
+      return;
+    }
+
+    setUpdating(true);
+    getClassSummaries().then(function (list) {
+      setUpdating(false);
+      classes = list || [];
+      var m = (window.location.hash || '').match(/^#q=(.*)$/);
+      if (m && m[1]) { try { $search.value = decodeURIComponent(m[1]); } catch (e) {} }
+      setPageMeta({
+        title: 'Free Exercise Questions and Answers for Maharashtra Board SSC &amp; HSC | QClasses',
+        description: 'QClasses provides free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and CBSE exams. One stop solution to score more in exams.',
+        canonical: window.location.href
+      });
+      doSearch();
+    }).catch(function (err) {
+      setUpdating(false);
+      $content.innerHTML = '<div class="error-banner">Failed to load classes: ' +
+                           escapeHtml(err.message || 'Unknown error') + '</div>';
+    });
+  }
+
+  $search.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function () {
+      var q = ($search.value || '').trim();
+      var newHash = q ? '#q=' + encodeURIComponent(q) : '';
+      if ((window.location.hash || '') !== newHash) {
+        history.replaceState(null, '', window.location.pathname + (newHash || ''));
+      }
+      doSearch();
+    }, 180);
+  });
+  $search.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      $search.value = '';
+      history.replaceState(null, '', window.location.pathname);
+      doSearch();
+    }
+  });
+  $clear.addEventListener('click', function () {
+    $search.value = '';
+    history.replaceState(null, '', window.location.pathname);
+    doSearch();
+    $search.focus();
+  });
+
+  loadClasses();
+})();
+</script>
+</body>
+</html>
