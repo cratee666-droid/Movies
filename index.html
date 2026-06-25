@@ -1,373 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#f6f7fb" />
-<meta name="color-scheme" content="light" />
-<meta name="HandheldFriendly" content="true" />
-<meta name="format-detection" content="telephone=no" />
-<meta name="msapplication-tap-highlight" content="no" />
-<meta name="description" content="Free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and Class 8, 9, 11. One stop solution to score more in exams." />
-<link rel="canonical" href="https://qclasses.netlify.app/" />
-<title>Free Exercise Questions and Answers - Maharashtra Board Class 8, 9, 10, 11, 12 | QClasses</title>
-<meta name="robots" content="index, follow" />
-<link rel="manifest" href="./manifest.webmanifest" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="QClasses" />
-<meta property="og:title" content="Free Exercise Questions and Answers - Maharashtra Board Class 8, 9, 10, 11, 12 | QClasses" />
-<meta property="og:description" content="Free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and Class 8, 9, 11. One stop solution to score more in exams." />
-<meta property="og:url" content="https://qclasses.netlify.app/" />
-<meta property="og:image" content="https://qclasses.netlify.app/icon-maskable-512.png" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arena Leaderboard API</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+  :root{
+    --bg:#0B0E14;
+    --panel:#11151F;
+    --panel-2:#1A1F2B;
+    --border:#262C3A;
+    --text:#E8E6E1;
+    --text-dim:#8A91A3;
+    --text-faint:#565E72;
+    --accent:#5EEAD4;
+    --accent-dim:#2D6A60;
+    --warn:#F59E0B;
+    --error:#F87171;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 24px; }
 
-<!-- Inline SVG favicon (no extra HTTP request). -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232a3299'/%3E%3Ctext x='50' y='66' text-anchor='middle' fill='white' font-size='62' font-family='sans-serif' font-weight='700'%3EQ%3C/text%3E%3C/svg%3E" />
+  /* ---------- Config bar ---------- */
+  .configbar{
+    border-bottom:1px solid var(--border); background:#0D1119;
+    position:sticky; top:0; z-index:50;
+  }
+  .configbar-inner{
+    display:flex; align-items:center; gap:10px; padding:12px 24px; flex-wrap:wrap;
+  }
+  .configbar label{
+    font-family:var(--mono); font-size:11px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:0.05em;
+  }
+  .configbar input{
+    flex:1; min-width:240px; background:var(--panel-2); border:1px solid var(--border);
+    color:var(--text); font-family:var(--mono); font-size:13px; padding:9px 12px;
+    border-radius:6px; outline:none;
+  }
+  .configbar input:focus{ border-color:var(--accent-dim); }
+  .configbar button{
+    font-family:var(--mono); font-size:12.5px; font-weight:600; padding:9px 16px;
+    border-radius:6px; border:1px solid var(--accent); background:var(--accent);
+    color:#06231F; cursor:pointer; white-space:nowrap;
+  }
+  .configbar button:hover{ background:#79F0DA; }
+  .configbar .hint{
+    font-family:var(--mono); font-size:11px; color:var(--text-faint); width:100%;
+  }
 
-<link rel="preconnect" href="https://rosho-c2d11-default-rtdb.firebaseio.com" crossorigin />
-<link rel="dns-prefetch" href="https://rosho-c2d11-default-rtdb.firebaseio.com" />
+  .hero{ padding:48px 0 28px; }
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; color:var(--accent);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:'//'; color:var(--text-faint); }
+  h1{
+    font-family:var(--sans); font-weight:700; font-size:clamp(26px,4vw,40px);
+    letter-spacing:-0.02em; line-height:1.1; max-width:680px; margin-bottom:14px;
+  }
+  .lede{ color:var(--text-dim); font-size:15.5px; max-width:600px; }
 
-<link rel="stylesheet" href="./styles.css" />
+  /* ---------- Status panel ---------- */
+  .status-panel{
+    border:1px solid var(--border); border-radius:10px; background:var(--panel);
+    padding:18px 20px; margin:28px 0 40px; display:flex; align-items:center;
+    gap:14px; font-family:var(--mono); font-size:13px;
+  }
+  .status-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .status-dot.pending{ background:var(--text-faint); }
+  .status-dot.loading{ background:var(--warn); animation:blink 1s infinite; }
+  .status-dot.ok{ background:var(--accent); }
+  .status-dot.error{ background:var(--error); }
+  @keyframes blink{ 50%{ opacity:0.3; } }
+  .status-text{ color:var(--text-dim); }
+  .status-text b{ color:var(--text); font-weight:600; }
+
+  .section-label{
+    font-family:var(--mono); font-size:12px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px;
+  }
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:24px; }
+  .tab{
+    font-family:var(--mono); font-size:12.5px; padding:8px 12px;
+    border:1px solid var(--border); border-radius:6px; background:var(--panel);
+    color:var(--text-dim); cursor:pointer; transition:all .15s ease; white-space:nowrap;
+  }
+  .tab:hover{ color:var(--text); border-color:#3A4256; }
+  .tab.active{ background:var(--panel-2); color:var(--accent); border-color:var(--accent-dim); }
+  .tab:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .data-card{
+    border:1px solid var(--border); border-radius:10px; background:var(--panel);
+    margin-bottom:48px; overflow:hidden; min-height:160px;
+  }
+  .data-card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px;
+  }
+  .endpoint-path{ font-family:var(--mono); font-size:13px; color:var(--text); }
+  .endpoint-path .method{ color:var(--accent); font-weight:700; margin-right:8px; }
+  .meta-pills{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pill{
+    font-family:var(--mono); font-size:11px; padding:4px 9px; border-radius:20px;
+    border:1px solid var(--border); color:var(--text-dim);
+  }
+  .pill.fresh{ color:var(--accent); border-color:var(--accent-dim); background:rgba(94,234,212,0.06); }
+  .pill.err{ color:var(--error); border-color:#5C2A2A; background:rgba(248,113,113,0.06); }
+
+  .empty-state{
+    padding:48px 24px; text-align:center; color:var(--text-faint);
+    font-family:var(--mono); font-size:13px; line-height:1.8;
+  }
+  .empty-state .big{ font-size:24px; margin-bottom:10px; }
+  .empty-state code{
+    color:var(--text-dim); background:var(--panel-2); padding:2px 7px; border-radius:4px;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left; font-family:var(--mono); font-size:11px; color:var(--text-faint);
+    text-transform:uppercase; letter-spacing:0.04em; padding:12px 20px;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  tbody td{ padding:13px 20px; font-size:13.5px; border-bottom:1px solid #1B202C; white-space:nowrap; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:#151B27; }
+
+  .json-toggle{
+    font-family:var(--mono); font-size:12px; color:var(--text-dim);
+    padding:13px 20px; border-top:1px solid var(--border); cursor:pointer;
+    display:flex; align-items:center; gap:8px; background:var(--panel-2);
+  }
+  .json-toggle:hover{ color:var(--accent); }
+  .json-toggle .chev{ transition:transform .2s ease; }
+  .json-toggle.open .chev{ transform:rotate(90deg); }
+  .json-body{
+    display:none; padding:18px 20px; background:#0D1119; border-top:1px solid var(--border);
+    font-family:var(--mono); font-size:12px; color:var(--text-dim); overflow-x:auto;
+    line-height:1.7; white-space:pre-wrap; word-break:break-word;
+  }
+  .json-body.show{ display:block; }
+
+  footer{
+    border-top:1px solid var(--border); padding:28px 0 48px;
+    font-family:var(--mono); font-size:12px; color:var(--text-faint);
+  }
+
+  @media (max-width:640px){
+    thead th:nth-child(4), tbody td:nth-child(4){ display:none; }
+  }
+</style>
 </head>
 <body>
-<div class="offline-tag" id="offlineTag">OFFLINE</div>
 
-<div id="app">
-  <div class="header">
-    <div class="header-row">
-      <img src="./icon.svg" alt="Q&A" class="site-logo" />
-      <h1 class="title">Classes</h1>
-      <a class="header-action" href="./books.html">Books</a>
-      <div class="update-pill" id="updatePill">Updating…</div>
-    </div>
-    <div class="breadcrumb"><span class="current">Classes</span></div>
-
-    <div class="search-bar-global">
-      <span class="search-icon">⌕</span>
-      <input
-        type="search"
-        class="search-input"
-        id="searchInput"
-        placeholder="Search all questions…"
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false"
-      />
-      <button class="search-clear" id="searchClear" aria-label="Clear" style="display:none;">×</button>
+  <div class="configbar">
+    <div class="configbar-inner">
+      <label for="apiBase">API base&nbsp;</label>
+      <input id="apiBase" type="text" placeholder="https://your-site.netlify.app" value="https://justwatched.netlify.app">
+      <button id="connectBtn">Connect</button>
+      <span class="hint">Calls <code>{base}/api/leaderboards</code> — edit this once your Netlify Functions are deployed.</span>
     </div>
   </div>
 
-  <section class="hero-card">
-    <div class="hero-kicker">Free • Chapter-wise Solutions • HSC SSC </div>
-    <h2 class="hero-title">Exercise Questions and Answers for Maharashtra Board Class 8, 9, 10, 11, 12</h2>
-    <p class="hero-subtitle">Get chapter-wise exercise questions and answers for Maharashtra Board SSC and HSC. Covers Class 8, 9, 10, 11 and 12 — all subjects, all chapters, completely free.</p>
-    <div class="hero-actions">
-      <a class="hero-btn primary" href="#content">Browse Classes</a>
-      <a class="hero-btn" href="./books.html">Download Books</a>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">live · no mock data</div>
+      <h1>This page only shows what your API actually returns.</h1>
+      <p class="lede">No hardcoded numbers. Set your API base above and hit Connect — if the endpoint isn't deployed yet, you'll see a real error here, not fake data.</p>
+    </section>
+
+    <div class="status-panel" id="statusPanel">
+      <span class="status-dot pending" id="statusDot"></span>
+      <span class="status-text" id="statusText">Not connected yet — click <b>Connect</b> above.</span>
     </div>
-  </section>
 
-  <div class="board-filters" id="boardFilters" style="display:none;"></div>
+    <div class="section-label">categories</div>
+    <div class="tabs" id="tabs">
+      <span style="font-family:var(--mono); font-size:12.5px; color:var(--text-faint);">connect to load categories…</span>
+    </div>
 
-  <div id="content"><section class="board-section"><div class="board-title">SSC</div><div class="list"><a class="list-item" href="./subjects/class-10/index.html"><svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span class="card-main"><span class="card-title">Class 10</span><span class="card-subtitle">SSC</span></span><span class="count">1 subject</span><span class="arrow">›</span></a></div></section></div></div>
+    <div id="cardMount"></div>
   </div>
-</div>
-<footer class="site-footer"><strong>Q&A Student</strong><br>Simple, organized learning for students.</footer>
 
-<div class="toast" id="toast"></div>
+  <footer>
+    <div class="wrap">
+      Expected response shape: <code style="color:var(--text-dim)">{ "category", "url", "scraped_at", "headers", "rows", "error" }</code> per leaderboard.
+    </div>
+  </footer>
 
-<!-- shared.js loads synchronously BEFORE the page script so helpers are ready. -->
-<script src="./shared.js"></script>
 <script>
-(function () {
-  var APP = window.APP;
-  var escapeHtml = APP.escapeHtml;
-  var buildUrl = APP.buildUrl;
-  var refreshTree = APP.refreshTree;
-  var getClassSummaries = APP.getClassSummaries;
-  var svgIcon = APP.svgIcon;
-  var setUpdating = APP.setUpdating;
-  var setPageMeta = APP.setPageMeta;
-  var generateSlug = APP.generateSlug;
+  const DEFAULT_SLUGS = [
+    "agent","text","code-webdev","code-image-to-webdev","text-to-image",
+    "image-edit","text-to-video","image-to-video","video-edit","vision",
+    "document","search"
+  ];
 
-  var $content = document.getElementById('content');
-  var $search = document.getElementById('searchInput');
-  var $clear = document.getElementById('searchClear');
-  var $boardFilters = document.getElementById('boardFilters');
+  let apiBase = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
+  let activeSlug = null;
+  let lastPayload = null; // raw data from /api/leaderboards
 
-  var classes = [];
-  var allData = null;
-  var allQuestions = [];
-  var searchIndexPromise = null;
-  var debounceTimer = null;
-  var selectedBoard = 'all';
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const tabsEl = document.getElementById('tabs');
+  const cardMount = document.getElementById('cardMount');
 
-  function buildIndex(data) {
-    var items = [];
-    Object.keys(data || {}).forEach(function (cId) {
-      var cName = (data[cId] && data[cId].name) || cId;
-      var cSlug = (data[cId] && data[cId].slug) || generateSlug(cName);
-      var subs = (data[cId] && data[cId].subjects) || {};
-      Object.keys(subs).forEach(function (sId) {
-        var sName = (subs[sId] && subs[sId].name) || sId;
-        var sSlug = (subs[sId] && subs[sId].slug) || generateSlug(sName);
-        var chs = (subs[sId] && subs[sId].chapters) || {};
-        Object.keys(chs).forEach(function (chId) {
-          var chName = (chs[chId] && chs[chId].name) || chId;
-          var chSlug = (chs[chId] && chs[chId].slug) || generateSlug(chName);
-          var qs = (chs[chId] && chs[chId].questions) || {};
-          Object.keys(qs).forEach(function (qId) {
-            items.push({
-              id: qId,
-              classId: cId,
-              className: cName,
-              classSlug: cSlug,
-              subjectId: sId,
-              subjectName: sName,
-              subjectSlug: sSlug,
-              chapterId: chId,
-              chapterName: chName,
-              chapterSlug: chSlug,
-              type: String((qs[qId] && qs[qId].type) || ''),
-              question: String((qs[qId] && qs[qId].question) || ''),
-              answer: String((qs[qId] && qs[qId].answer) || '')
-            });
-          });
-        });
-      });
-    });
-    return items;
+  function setStatus(state, text){
+    statusDot.className = 'status-dot ' + state;
+    statusText.innerHTML = text;
   }
 
-  function renderBoardFilters() {
-    var boards = [];
-    var seen = {};
-    classes.forEach(function (c) {
-      var board = (c.board || 'Classes').trim() || 'Classes';
-      if (!seen[board]) { seen[board] = true; boards.push({ title: board, order: Number(c.boardOrder == null ? 9999 : c.boardOrder) }); }
-    });
-    boards.sort(function (a, b) {
-      if (a.order !== b.order) return a.order - b.order;
-      return String(a.title).localeCompare(String(b.title), undefined, { numeric: true });
-    });
-    if (!boards.length || boards.length === 1) { $boardFilters.style.display = 'none'; return; }
-    $boardFilters.style.display = 'flex';
-    $boardFilters.innerHTML = '<button class="filter-chip ' + (selectedBoard === 'all' ? 'active' : '') + '" data-board="all">All</button>' +
-      boards.map(function (b) {
-        return '<button class="filter-chip ' + (selectedBoard === b.title ? 'active' : '') + '" data-board="' + escapeHtml(b.title) + '">' + escapeHtml(b.title) + '</button>';
-      }).join('');
-    Array.prototype.forEach.call($boardFilters.querySelectorAll('[data-board]'), function (btn) {
-      btn.addEventListener('click', function () {
-        selectedBoard = btn.getAttribute('data-board') || 'all';
-        renderBoardFilters();
-        renderClassList();
-      });
-    });
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
 
-  function renderClassList() {
-    if (!classes.length) {
-      $content.innerHTML = '<div class="empty">No classes available yet.</div>';
-      return;
-    }
+  async function connect(){
+    apiBase = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
+    if (!apiBase){ setStatus('error', 'Enter an API base URL first.'); return; }
 
-    renderBoardFilters();
-    var groups = [];
-    var byBoard = {};
-    classes.forEach(function (c) {
-      var board = (c.board || 'Classes').trim() || 'Classes';
-      if (selectedBoard !== 'all' && board !== selectedBoard) return;
-      if (!byBoard[board]) {
-        byBoard[board] = { title: board, order: Number(c.boardOrder == null ? 9999 : c.boardOrder), items: [] };
-        groups.push(byBoard[board]);
+    const endpoint = apiBase + '/api/leaderboards';
+    setStatus('loading', 'Fetching <b>' + escapeHtml(endpoint) + '</b> …');
+    tabsEl.innerHTML = '<span style="font-family:var(--mono); font-size:12.5px; color:var(--text-faint);">loading…</span>';
+    cardMount.innerHTML = '';
+
+    try {
+      const res = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+      const contentType = res.headers.get('content-type') || '';
+
+      if (!res.ok){
+        throw new Error('HTTP ' + res.status + ' ' + res.statusText);
       }
-      byBoard[board].items.push(c);
+      if (!contentType.includes('application/json')){
+        // Endpoint exists but isn't a JSON API (e.g. it returned the site's HTML)
+        const text = await res.text();
+        throw new Error(
+          'Endpoint responded with ' + (contentType || 'unknown content-type') +
+          ', not JSON. This usually means /api/leaderboards is not deployed at this domain yet ' +
+          '(Netlify is serving the page/404 fallback instead of a function).'
+        );
+      }
+
+      const data = await res.json();
+      lastPayload = data;
+      setStatus('ok', 'Connected to <b>' + escapeHtml(apiBase) + '</b> — live data loaded.');
+      renderTabsFromPayload(data);
+    } catch (err) {
+      setStatus('error', 'Could not load live data: <b>' + escapeHtml(err.message) + '</b>');
+      tabsEl.innerHTML = '';
+      cardMount.innerHTML = renderErrorCard(endpoint, err.message);
+    }
+  }
+
+  function renderErrorCard(endpoint, message){
+    return `
+      <div class="data-card">
+        <div class="data-card-head">
+          <div class="endpoint-path"><span class="method">GET</span>${escapeHtml(endpoint)}</div>
+          <div class="meta-pills"><span class="pill err">no data</span></div>
+        </div>
+        <div class="empty-state">
+          <div class="big">⌁</div>
+          No live data to show.<br>${escapeHtml(message)}<br><br>
+          Once <code>/api/leaderboards</code> is deployed on this domain and returns JSON,<br>
+          reload this page and click Connect again.
+        </div>
+      </div>
+    `;
+  }
+
+  function getCategoryMap(data){
+    // Accepts either { leaderboards: { slug: {...} } } or { slug: {...} } directly
+    if (data && data.leaderboards && typeof data.leaderboards === 'object') return data.leaderboards;
+    if (data && typeof data === 'object') return data;
+    return {};
+  }
+
+  function renderTabsFromPayload(data){
+    const map = getCategoryMap(data);
+    const slugs = Object.keys(map).length ? Object.keys(map) : DEFAULT_SLUGS;
+    activeSlug = slugs[0];
+
+    tabsEl.innerHTML = slugs.map(slug =>
+      `<button class="tab${slug===activeSlug?' active':''}" data-slug="${escapeHtml(slug)}">/${escapeHtml(slug)}</button>`
+    ).join('');
+
+    tabsEl.querySelectorAll('.tab').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        activeSlug = btn.dataset.slug;
+        tabsEl.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b===btn));
+        await loadCategory(activeSlug);
+      });
     });
-    groups.sort(function (a, b) {
-      if (a.order !== b.order) return a.order - b.order;
-      return String(a.title).localeCompare(String(b.title), undefined, { numeric: true });
-    });
-    if (!groups.length) {
-      selectedBoard = 'all';
-      renderClassList();
+
+    loadCategory(activeSlug);
+  }
+
+  async function loadCategory(slug){
+    // Prefer data already present in the /api/leaderboards payload.
+    const map = getCategoryMap(lastPayload);
+    if (map && map[slug]){
+      renderCard(slug, map[slug]);
+      return;
+    }
+    // Otherwise fetch the per-category endpoint directly.
+    const endpoint = apiBase + '/api/leaderboards/' + slug;
+    cardMount.innerHTML = `<div class="data-card"><div class="empty-state">loading ${escapeHtml(slug)}…</div></div>`;
+    try {
+      const res = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) throw new Error('Non-JSON response from ' + endpoint);
+      const cat = await res.json();
+      renderCard(slug, cat);
+    } catch (err) {
+      cardMount.innerHTML = renderErrorCard(endpoint, err.message);
+    }
+  }
+
+  function renderCard(slug, cat){
+    if (!cat || cat.error){
+      cardMount.innerHTML = renderErrorCard(apiBase + '/api/leaderboards/' + slug, (cat && cat.error) || 'Empty response');
       return;
     }
 
-    $content.innerHTML = groups.map(function (g) {
-      g.items.sort(function (a, b) {
-        var ao = Number(a.order == null ? 9999 : a.order);
-        var bo = Number(b.order == null ? 9999 : b.order);
-        if (ao !== bo) return ao - bo;
-        return String(a.name || a.id).localeCompare(String(b.name || b.id), undefined, { numeric: true });
-      });
-      return '<section class="board-section">' +
-             '<div class="board-title">' + escapeHtml(g.title) + '</div>' +
-             '<div class="list">' + g.items.map(function (c) {
-               var sc = Number(c.subjectCount || 0);
-               var countText = sc ? (sc === 1 ? '1 subject' : sc + ' subjects') : '—';
-               return '<a class="list-item" href="' + buildUrl('subjects.html', { class: c.slug }) + '">' +
-                      svgIcon('class') +
-                      '<span class="card-main"><span class="card-title">' + escapeHtml(c.name || c.id) + '</span>' +
-                      '<span class="card-subtitle">' + escapeHtml(g.title) + '</span></span>' +
-                      '<span class="count">' + countText + '</span>' +
-                      '<span class="arrow">›</span></a>';
-             }).join('') + '</div></section>';
+    const headers = Array.isArray(cat.headers) && cat.headers.length
+      ? cat.headers
+      : (Array.isArray(cat.rows) && cat.rows.length && typeof cat.rows[0] === 'object' && !Array.isArray(cat.rows[0])
+          ? Object.keys(cat.rows[0])
+          : []);
+
+    const rows = Array.isArray(cat.rows) ? cat.rows : [];
+
+    if (!rows.length){
+      cardMount.innerHTML = `
+        <div class="data-card">
+          <div class="data-card-head">
+            <div class="endpoint-path"><span class="method">GET</span>${escapeHtml(apiBase + '/api/leaderboards/' + slug)}</div>
+            <div class="meta-pills"><span class="pill">200 OK</span><span class="pill">0 rows</span></div>
+          </div>
+          <div class="empty-state">No rows returned for this category yet.</div>
+        </div>
+      `;
+      return;
+    }
+
+    const theadHtml = headers.length
+      ? headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')
+      : '<th>Data</th>';
+
+    const rowsHtml = rows.map(r => {
+      if (Array.isArray(r)){
+        return '<tr>' + r.map(v => `<td>${escapeHtml(v)}</td>`).join('') + '</tr>';
+      } else if (typeof r === 'object'){
+        return '<tr>' + Object.values(r).map(v => `<td>${escapeHtml(v)}</td>`).join('') + '</tr>';
+      }
+      return `<tr><td>${escapeHtml(r)}</td></tr>`;
     }).join('');
-  }
 
-  function ensureSearchIndex() {
-    if (allData) return Promise.resolve(allData);
-    if (searchIndexPromise) return searchIndexPromise;
+    const scrapedAt = cat.scraped_at ? new Date(cat.scraped_at) : null;
+    const scrapedLabel = scrapedAt && !isNaN(scrapedAt) ? scrapedAt.toLocaleString() : 'unknown';
 
-    setUpdating(true);
-    searchIndexPromise = refreshTree().then(function (data) {
-      allData = data || {};
-      allQuestions = buildIndex(allData);
-      setUpdating(false);
-      return allData;
-    }).catch(function (err) {
-      setUpdating(false);
-      searchIndexPromise = null;
-      throw err;
-    });
-    return searchIndexPromise;
-  }
+    cardMount.innerHTML = `
+      <div class="data-card">
+        <div class="data-card-head">
+          <div class="endpoint-path"><span class="method">GET</span>${escapeHtml(apiBase + '/api/leaderboards/' + slug)}</div>
+          <div class="meta-pills">
+            <span class="pill fresh">200 OK</span>
+            <span class="pill">scraped_at: ${escapeHtml(scrapedLabel)}</span>
+            <span class="pill">${rows.length} rows</span>
+          </div>
+        </div>
+        <table>
+          <thead><tr>${theadHtml}</tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="json-toggle" id="jsonToggle">
+          <span class="chev">▸</span> view raw response
+        </div>
+        <div class="json-body" id="jsonBody">${escapeHtml(JSON.stringify(cat, null, 2))}</div>
+      </div>
+    `;
 
-  function doSearch() {
-    var q = ($search.value || '').trim();
-    var qLow = q.toLowerCase();
-    $clear.style.display = q ? 'flex' : 'none';
-
-    if (!q) {
-      renderClassList();
-      return;
-    }
-    $boardFilters.style.display = 'none';
-
-    if (!allData) {
-      $content.innerHTML = '<div class="skeleton-heading"></div><div class="skeleton-list"><div class="skeleton-item"></div><div class="skeleton-item"></div><div class="skeleton-item short"></div></div>';
-      ensureSearchIndex().then(doSearch).catch(function (err) {
-        $content.innerHTML = '<div class="error-banner">Failed to search: ' +
-                             escapeHtml(err.message || 'Unknown error') + '</div>';
-      });
-      return;
-    }
-
-    if (!allQuestions.length) {
-      $content.innerHTML = '<div class="empty">No questions in database yet.</div>';
-      return;
-    }
-
-    var filtered = allQuestions.filter(function (it) {
-      return (it.question || '').toLowerCase().includes(qLow) ||
-             (it.type || '').toLowerCase().includes(qLow);
-    });
-    if (!filtered.length) {
-      $content.innerHTML = '<div class="empty">No questions match &ldquo;' +
-                           escapeHtml(q) + '&rdquo;.<br>Try a different keyword.</div>';
-      return;
-    }
-
-    var groups = new Map();
-    filtered.forEach(function (it) {
-      var key = it.classId + '||' + it.subjectId + '||' + it.chapterId;
-      if (!groups.has(key)) {
-        groups.set(key, {
-          classId: it.classId, subjectId: it.subjectId, chapterId: it.chapterId,
-          className: it.className, subjectName: it.subjectName, chapterName: it.chapterName,
-          classSlug: it.classSlug, subjectSlug: it.subjectSlug, chapterSlug: it.chapterSlug,
-          items: []
-        });
-      }
-      groups.get(key).items.push(it);
-    });
-
-    var html = '<div class="search-meta">' + filtered.length +
-               ' result' + (filtered.length === 1 ? '' : 's') +
-               ' for &ldquo;' + escapeHtml(q) + '&rdquo;</div>';
-
-    groups.forEach(function (g) {
-      html += '<div class="search-group">';
-      html += '<div class="search-group-path">';
-      html += '<a href="' + buildUrl('subjects.html', { class: g.classSlug }) + '">' +
-              escapeHtml(g.className) + '</a>';
-      html += '<span class="crumb-sep">›</span>';
-      html += '<a href="' + buildUrl('chapters.html', { class: g.classSlug, subject: g.subjectSlug }) + '">' +
-              escapeHtml(g.subjectName) + '</a>';
-      html += '<span class="crumb-sep">›</span>';
-      html += '<span class="current">' + escapeHtml(g.chapterName) + '</span>';
-      html += '</div><div class="search-group-list">';
-      g.items.forEach(function (it, idx) {
-        var url = buildUrl('answer.html', {
-          class: it.classSlug, subject: it.subjectSlug,
-          chapter: it.chapterSlug, qId: it.id
-        });
-        html += '<a class="search-result" href="' + url + '">';
-        html += svgIcon('question');
-        html += '<div class="result-body">';
-        if (it.type) html += '<div class="result-type">' + escapeHtml(it.type) + '</div>';
-        html += '<div class="result-text">' + escapeHtml(it.question) + '</div>';
-        html += '</div><span class="arrow">›</span></a>';
-      });
-      html += '</div></div>';
-    });
-
-    $content.innerHTML = html;
-  }
-
-  function loadClasses() {
-    if (!navigator.onLine) {
-      $content.innerHTML = '<div class="error-banner">You are offline. Please connect to the internet and reload.</div>';
-      return;
-    }
-
-    setUpdating(true);
-    getClassSummaries().then(function (list) {
-      setUpdating(false);
-      classes = list || [];
-      var m = (window.location.hash || '').match(/^#q=(.*)$/);
-      if (m && m[1]) { try { $search.value = decodeURIComponent(m[1]); } catch (e) {} }
-      setPageMeta({
-        title: 'Free Exercise Questions and Answers for Maharashtra Board SSC &amp; HSC | QClasses',
-        description: 'QClasses provides free exercise questions and answers for Maharashtra Board SSC Class 10, HSC Class 12 and CBSE exams. One stop solution to score more in exams.',
-        canonical: window.location.href
-      });
-      doSearch();
-    }).catch(function (err) {
-      setUpdating(false);
-      $content.innerHTML = '<div class="error-banner">Failed to load classes: ' +
-                           escapeHtml(err.message || 'Unknown error') + '</div>';
+    document.getElementById('jsonToggle').addEventListener('click', function(){
+      this.classList.toggle('open');
+      document.getElementById('jsonBody').classList.toggle('show');
     });
   }
 
-  $search.addEventListener('input', function () {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(function () {
-      var q = ($search.value || '').trim();
-      var newHash = q ? '#q=' + encodeURIComponent(q) : '';
-      if ((window.location.hash || '') !== newHash) {
-        history.replaceState(null, '', window.location.pathname + (newHash || ''));
-      }
-      doSearch();
-    }, 180);
-  });
-  $search.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      $search.value = '';
-      history.replaceState(null, '', window.location.pathname);
-      doSearch();
-    }
-  });
-  $clear.addEventListener('click', function () {
-    $search.value = '';
-    history.replaceState(null, '', window.location.pathname);
-    doSearch();
-    $search.focus();
-  });
-
-  loadClasses();
-})();
+  document.getElementById('connectBtn').addEventListener('click', connect);
+  document.getElementById('apiBase').addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
 </script>
+
 </body>
 </html>
